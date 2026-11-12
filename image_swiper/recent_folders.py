@@ -31,6 +31,16 @@ class RecentFolders:
         key = os.path.normcase(normalized)
         self.folders = [normalized] + [value for value in self.folders if os.path.normcase(value) != key]
         self.folders = self.folders[:3]
+        self._save()
+
+    def forget(self, folder):
+        key = os.path.normcase(os.path.abspath(os.path.expanduser(str(folder))))
+        remaining = [value for value in self.folders if os.path.normcase(value) != key]
+        if len(remaining) != len(self.folders):
+            self.folders = remaining
+            self._save()
+
+    def _save(self):
         self.path.parent.mkdir(parents=True, exist_ok=True)
         temporary = None
         try:

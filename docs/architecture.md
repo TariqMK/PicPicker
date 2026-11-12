@@ -62,3 +62,5 @@ the history through the existing `/data/` rule. Windows bundles use ignored
 History is deduplicated and capped at three entries. Missing drives are checked
 only when selected, and malformed history is ignored without blocking startup.
 Selecting a recent folder uses the same reset and cancellable scan as Open Folder….
+The toolbar list is a themed popup rather than a native menu so each entry can carry a
+faint × that removes it from the history; the macOS File › Open Recent menu stays native.

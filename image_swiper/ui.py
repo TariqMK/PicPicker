@@ -142,9 +142,104 @@ class UiMixin:
         menu.add_command(label='Choose Folder…', command=self.select_folder)
 
     def show_recent_menu(self):
-        menu = self._menu()
-        self.fill_recent_menu(menu)
-        self._post_menu(menu, self.recent_btn)
+        """Themed popup instead of a native menu so each folder can carry a remove button."""
+        if getattr(self, '_recent_popup', None) is not None:
+            self.close_recent_popup()
+            return
+        t = self.theme
+        popup = tk.Toplevel(self.root, bg=t.hairline)
+        popup.wm_overrideredirect(True)
+        popup.wm_attributes('-topmost', True)
+        self._recent_popup = popup
+        self._recent_body = tk.Frame(popup, bg=t.control, padx=0, pady=t.px(4))
+        self._recent_body.pack(padx=1, pady=1)
+        self._fill_recent_popup()
+        x = self.recent_btn.winfo_rootx()
+        y = self.recent_btn.winfo_rooty() + self.recent_btn.winfo_height() + t.px(4)
+        popup.wm_geometry(f'+{x}+{y}')
+        popup.bind('<Escape>', lambda e: self.close_recent_popup())
+        popup.bind('<FocusOut>', lambda e: self.close_recent_popup() if e.widget is popup else None)
+        popup.bind('<ButtonPress>', self._recent_popup_click, add='+')
+        popup.focus_force()
+        try:
+            popup.grab_set()
+        except tk.TclError:
+            pass
+
+    def close_recent_popup(self):
+        popup, self._recent_popup = getattr(self, '_recent_popup', None), None
+        if popup is not None:
+            popup.grab_release()
+            popup.destroy()
+
+    def _recent_popup_click(self, event):
+        # While grabbed, clicks elsewhere in the window arrive here; treat them as dismissal.
+        popup = self._recent_popup
+        if popup is None:
+            return
+        inside = (popup.winfo_rootx() <= event.x_root < popup.winfo_rootx() + popup.winfo_width() and
+                  popup.winfo_rooty() <= event.y_root < popup.winfo_rooty() + popup.winfo_height())
+        if not inside:
+            self.close_recent_popup()
+
+    def _fill_recent_popup(self):
+        t = self.theme
+        body = self._recent_body
+        for child in body.winfo_children():
+            child.destroy()
+
+        def item(text, command, enabled=True, removable_folder=None):
+            row = tk.Frame(body, bg=t.control, cursor='hand2' if enabled else '')
+            row.pack(fill=tk.X, padx=t.px(4))
+            label = tk.Label(row, text=text, bg=t.control, anchor='w', font=t.font(13),
+                             fg=t.text if enabled else t.text_disabled,
+                             padx=t.px(10), pady=t.px(5))
+            label.pack(side=tk.LEFT, fill=tk.X, expand=True)
+            widgets = [row, label]
+            remove = None
+            if removable_folder is not None:
+                remove = tk.Label(row, text='×', bg=t.control, fg=t.text_disabled,
+                                  font=t.font(15), padx=t.px(8), cursor='hand2')
+                remove.pack(side=tk.RIGHT)
+                widgets.append(remove)
+                remove.bind('<Enter>', lambda e: remove.configure(fg=t.danger_text))
+                remove.bind('<Leave>', lambda e: remove.configure(fg=t.text_muted))
+                remove.bind('<ButtonRelease-1>', lambda e: self.forget_recent_folder(removable_folder))
+            if not enabled:
+                return
+
+            def paint(hover):
+                for widget in widgets:
+                    widget.configure(bg=t.control_active if hover else t.control)
+                if remove is not None and remove.cget('fg') != t.danger_text:
+                    remove.configure(fg=t.text_muted if hover else t.text_disabled)
+
+            def leave(event):
+                under = row.winfo_containing(event.x_root, event.y_root)
+                if under not in widgets:
+                    paint(False)
+
+            for widget in widgets:
+                widget.bind('<Enter>', lambda e: paint(True), add='+')
+                widget.bind('<Leave>', leave, add='+')
+            for widget in (row, label):
+                widget.bind('<ButtonRelease-1>', lambda e: (self.close_recent_popup(), command()))
+
+        for folder in self.recent_folders.folders:
+            item(shorten(folder, 64), lambda f=folder: self.select_recent_folder(f), removable_folder=folder)
+        if not self.recent_folders.folders:
+            item('No recent folders', None, enabled=False)
+        tk.Frame(body, bg=t.hairline, height=1).pack(fill=tk.X, pady=t.px(4))
+        item('Choose Folder…', self.select_folder)
+
+    def forget_recent_folder(self, folder):
+        try:
+            self.recent_folders.forget(folder)
+        except OSError:
+            messagebox.showwarning('Could not save recent folders',
+                                   'The folder was removed for now, but the change could not be saved.')
+        if getattr(self, '_recent_popup', None) is not None:
+            self._fill_recent_popup()
 
     def show_more_menu(self):
         menu = self._menu()

@@ -21,6 +21,16 @@ class RecentFolderTests(unittest.TestCase):
             history.remember(root / 'c')
             self.assertEqual([Path(folder).name for folder in RecentFolders(history.path).folders], ['c', 'd', 'b'])
 
+    def test_forgotten_folder_is_removed_and_persisted(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            history = RecentFolders(root / 'recent_folders.json')
+            for name in ('a', 'b', 'c'):
+                history.remember(root / name)
+            history.forget(root / 'b')
+            history.forget(root / 'missing')
+            self.assertEqual([Path(folder).name for folder in RecentFolders(history.path).folders], ['c', 'a'])
+
     def test_missing_corrupt_or_invalid_history_is_safe(self):
         with tempfile.TemporaryDirectory() as temporary:
             path = Path(temporary) / 'recent_folders.json'
