@@ -3,6 +3,7 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from pathlib import Path
+import re
 from datetime import datetime
 from copy import copy
 from queue import Empty
@@ -41,19 +42,18 @@ class LibraryMixin:
         self.subdirs_switch.redraw()
 
 
-    def natural_sort_key(self, path):
-        """Generate sort key for natural/numeric sorting of filenames"""
-        import re
-        filename = path.name.lower()
-        # Split filename into text and number parts for natural sorting
-        result = [int(text) if text.isdigit() else text for text in re.split(r'(\d+)', filename)]
-        # DEBUG - print first 5 files
-        if not hasattr(self, '_debug_count'):
-            self._debug_count = 0
-        if self._debug_count < 5:
-            print(f"natural_sort_key({path.name}) = {result}")
-            self._debug_count += 1
-        return result
+    @staticmethod
+    def natural_sort_key(path):
+        """Sort key: folder first, then file name, with numbers compared as numbers.
+
+        Grouping by folder keeps subfolder scans from mixing files that share
+        camera numbers (Holiday/IMG_0001 and Wedding/IMG_0001).
+        """
+        def parts(text):
+            # Empty strings are kept so text and numbers always alternate and never meet.
+            return [int(part) if part.isdigit() else part for part in re.split(r'(\d+)', text.lower())]
+        # Compare folders one level at a time, so Holiday/Day 2 stays with Holiday, before Holiday 2.
+        return [parts(folder) for folder in path.parent.parts], parts(path.name)
 
 
     def set_order(self, order):

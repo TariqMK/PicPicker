@@ -113,6 +113,24 @@ class ScanningTests(unittest.TestCase):
             self.assertEqual([path.name for path in result], ['visible.jpg'])
             options['get_date'].assert_not_called()
 
+    def test_name_order_keeps_each_folder_together(self):
+        names = ['Wedding 2021/IMG_0002.jpg', 'Holiday 2019/IMG_0002.jpg', 'Wedding 2021/DSC_0005.jpg',
+                 'Holiday 2019/IMG_10.jpg', 'Wedding 2021/IMG_0001.jpg', 'Holiday 2019/IMG_9.jpg',
+                 'Trip 10/IMG_1.jpg', 'Trip 9/IMG_1.jpg', 'Holiday 2019/Day 2/IMG_1.jpg',
+                 'Holiday 2019 extra/IMG_1.jpg']
+        result = sorted((Path(name) for name in names), key=LibraryMixin.natural_sort_key)
+        self.assertEqual([path.as_posix() for path in result], [
+            'Holiday 2019/IMG_0002.jpg', 'Holiday 2019/IMG_9.jpg', 'Holiday 2019/IMG_10.jpg',
+            'Holiday 2019/Day 2/IMG_1.jpg', 'Holiday 2019 extra/IMG_1.jpg',
+            'Trip 9/IMG_1.jpg', 'Trip 10/IMG_1.jpg',
+            'Wedding 2021/DSC_0005.jpg', 'Wedding 2021/IMG_0001.jpg', 'Wedding 2021/IMG_0002.jpg'])
+
+    def test_natural_sort_key_prints_nothing(self):
+        with patch('builtins.print') as printed:
+            for name in ('a/IMG_1.jpg', 'a/IMG_2.jpg', 'a/IMG_3.jpg', 'a/IMG_4.jpg', 'a/IMG_5.jpg', 'a/2.jpg'):
+                LibraryMixin.natural_sort_key(Path(name))
+        printed.assert_not_called()
+
     def test_closed_window_never_receives_worker_updates(self):
         window = SimpleNamespace(_closing=True, root=Mock(), counter_label=Mock())
         LibraryMixin.poll_scan(window)
