@@ -27,7 +27,7 @@ class ImageOrganizer(UiMixin, MediaMixin, MetadataMixin, CacheMixin, LibraryMixi
         self._scan_messages = Queue()
         self._scan_after = None
         self.root.protocol('WM_DELETE_WINDOW', self.close)
-        self.root.title(f"Image Swiper v{__version__}")
+        self.root.title(f"PicPicker v{__version__}")
         self.theme = Theme(root)
         self.root.geometry(f"{self.theme.px(1180)}x{self.theme.px(820)}")
         

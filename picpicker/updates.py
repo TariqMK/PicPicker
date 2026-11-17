@@ -16,8 +16,8 @@ from threading import Thread
 from .version import __version__
 from .widgets import FlatButton
 
-APP_NAME = 'Image Swiper'
-REPOSITORY = 'TariqMK/Image-Swiper'
+APP_NAME = 'PicPicker'
+REPOSITORY = 'TariqMK/PicPicker'
 LATEST_RELEASE_API = f'https://api.github.com/repos/{REPOSITORY}/releases/latest'
 RELEASES_PAGE = f'https://github.com/{REPOSITORY}/releases'
 TIMEOUT_SECONDS = 10
@@ -58,7 +58,7 @@ def fetch_latest_release(timeout=TIMEOUT_SECONDS):
     """
     request = urllib.request.Request(LATEST_RELEASE_API, headers={
         'Accept': 'application/vnd.github+json',
-        'User-Agent': f'Image-Swiper/{__version__}',
+        'User-Agent': f'PicPicker/{__version__}',
     })
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:

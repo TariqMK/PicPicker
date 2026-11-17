@@ -9,7 +9,7 @@ from unittest.mock import Mock, patch
 
 class TrashTests(unittest.TestCase):
     def load_backend(self, platform, modules):
-        spec = importlib.util.spec_from_file_location('trash_test_backend', Path(__file__).resolve().parents[1] / 'image_swiper' / 'recycle_bin.py')
+        spec = importlib.util.spec_from_file_location('trash_test_backend', Path(__file__).resolve().parents[1] / 'picpicker' / 'recycle_bin.py')
         backend = importlib.util.module_from_spec(spec)
         with patch.object(sys, 'platform', platform), patch.dict(sys.modules, modules):
             spec.loader.exec_module(backend)

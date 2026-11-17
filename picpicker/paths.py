@@ -17,9 +17,14 @@ def runtime_paths(project_root=None):
         if sys.platform == 'win32':
             root = Path(sys.executable).resolve().parent
         elif sys.platform == 'darwin':
-            root = Path.home() / 'Library' / 'Application Support' / 'ImageSwiper'
+            root = Path.home() / 'Library' / 'Application Support' / 'PicPicker'
+            old_root = root.with_name('ImageSwiper')
         else:
-            root = Path(os.environ.get('XDG_DATA_HOME', Path.home() / '.local' / 'share')) / 'image-swiper'
+            root = Path(os.environ.get('XDG_DATA_HOME', Path.home() / '.local' / 'share')) / 'picpicker'
+            old_root = root.with_name('image-swiper')
+        # The app was called Image Swiper before; keep its saved data on first launch.
+        if sys.platform != 'win32' and not root.exists() and old_root.is_dir():
+            shutil.move(str(old_root), str(root))
         root.mkdir(parents=True, exist_ok=True)
     else:
         root = PROJECT_ROOT
@@ -33,7 +38,7 @@ def runtime_paths(project_root=None):
         old_thumbnails = legacy / 'OnThisDay_thumbnails'
         if not database.exists() and old_database.exists():
             if any(Path(str(old_database) + suffix).exists() for suffix in ('-wal', '-shm', '-journal')):
-                raise RuntimeError('Close other Image Swiper instances before migrating the cache.')
+                raise RuntimeError('Close other PicPicker instances before migrating the cache.')
             shutil.move(str(old_database), str(database))
         if not thumbnails.exists() and old_thumbnails.exists():
             shutil.move(str(old_thumbnails), str(thumbnails))

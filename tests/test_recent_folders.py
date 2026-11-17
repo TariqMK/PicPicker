@@ -5,8 +5,8 @@ import unittest
 from unittest.mock import Mock, patch
 from types import SimpleNamespace
 
-from image_swiper.recent_folders import RecentFolders
-from image_swiper.library import LibraryMixin
+from picpicker.recent_folders import RecentFolders
+from picpicker.library import LibraryMixin
 
 
 class RecentFolderTests(unittest.TestCase):
@@ -41,7 +41,7 @@ class RecentFolderTests(unittest.TestCase):
 
     def test_unavailable_folder_does_not_replace_active_scan(self):
         window = SimpleNamespace(load_images=Mock())
-        with patch('image_swiper.library.Path.is_dir', return_value=False), patch('image_swiper.library.messagebox.showwarning') as warning:
+        with patch('picpicker.library.Path.is_dir', return_value=False), patch('picpicker.library.messagebox.showwarning') as warning:
             LibraryMixin.open_review_folder(window, 'unavailable-folder')
         warning.assert_called_once()
         window.load_images.assert_not_called()

@@ -7,27 +7,46 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from image_swiper.paths import runtime_paths
+from picpicker.paths import runtime_paths
 
 
 class StorageTests(unittest.TestCase):
     def test_frozen_build_storage_location(self):
         with tempfile.TemporaryDirectory() as temporary:
             base = Path(temporary)
-            with patch.object(sys, 'frozen', True, create=True), patch.object(sys, 'executable', str(base / 'ImageSwiper.exe')), patch('pathlib.Path.home', return_value=base), patch.dict(
+            with patch.object(sys, 'frozen', True, create=True), patch.object(sys, 'executable', str(base / 'PicPicker.exe')), patch('pathlib.Path.home', return_value=base), patch.dict(
                 'os.environ', {'LOCALAPPDATA': str(base), 'XDG_DATA_HOME': str(base)}
             ):
                 database, thumbnails = runtime_paths()
             if sys.platform == 'win32':
                 expected = base / 'cache'
             elif sys.platform == 'darwin':
-                expected = base / 'Library' / 'Application Support' / 'ImageSwiper' / 'data'
+                expected = base / 'Library' / 'Application Support' / 'PicPicker' / 'data'
             else:
-                expected = base / 'image-swiper' / 'data'
+                expected = base / 'picpicker' / 'data'
             # Windows temp paths may use an 8.3 alias (RUNNER~1), while the
             # executable path is resolved to its long form (runneradmin).
             self.assertEqual(database.parent.resolve(), expected.resolve())
             self.assertEqual(thumbnails.resolve(), (expected / 'thumbnails').resolve())
+
+    @unittest.skipIf(sys.platform == 'win32', 'Windows keeps its data beside the executable')
+    def test_image_swiper_data_folder_moves_to_picpicker(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            if sys.platform == 'darwin':
+                old = base / 'Library' / 'Application Support' / 'ImageSwiper'
+                new = base / 'Library' / 'Application Support' / 'PicPicker'
+            else:
+                old, new = base / 'image-swiper', base / 'picpicker'
+            (old / 'data').mkdir(parents=True)
+            (old / 'data' / 'recent_folders.json').write_text('["/photos"]')
+            with patch.object(sys, 'frozen', True, create=True), patch('pathlib.Path.home', return_value=base), patch.dict(
+                'os.environ', {'XDG_DATA_HOME': str(base)}
+            ):
+                runtime_paths()
+                runtime_paths()
+            self.assertFalse(old.exists())
+            self.assertEqual((new / 'data' / 'recent_folders.json').read_text(), '["/photos"]')
 
     def test_legacy_cache_and_thumbnail_paths_migrate_and_repeat_safely(self):
         for location in ('', 'Meta'):

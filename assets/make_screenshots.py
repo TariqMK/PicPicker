@@ -9,10 +9,16 @@ folders also go there, so your own files and settings are never read or changed.
 is deleted: the deleted frame on the contact strip is set directly. The window is drawn at
 2x (1120 x 720 px layout, saved as 2240 x 1440 px).
 
-Run from the repository root on Windows, with the app's dependencies installed and the
-window free to appear on screen for a few seconds:
-  python assets/make_screenshots.py --version v3.0.2
+The screenshots look the same on every platform: only the app's content is captured (no
+title bar or window frame), the folder path is a neutral made-up one, and the Windows-only
+Undo button is hidden. Fonts are the platform's own (Segoe UI on Windows, SF Pro on macOS).
+
+Run from the repository root on Windows, macOS or Linux (X11), with the app's dependencies
+installed and the window free to appear on screen for a few seconds:
+  python assets/make_screenshots.py --version v3.1.1
 --version is the release tag shown in the toolbar; it defaults to the newest local git tag.
+On macOS, the app running the script needs Screen Recording permission
+(System Settings > Privacy & Security > Screen Recording).
 """
 
 import argparse
@@ -154,47 +160,71 @@ def main() -> int:
     args = parser.parse_args()
     if not args.version:
         sys.exit('No release tag found. Pass --version, for example --version v3.0.2.')
-    if sys.platform != 'win32':
-        sys.exit('This script captures the window with Windows APIs; run it on Windows.')
-
-    ctypes.windll.shcore.SetProcessDpiAwareness(1)
+    if sys.platform == 'win32':
+        # Work in physical pixels, so 1 window unit = 1 captured pixel.
+        ctypes.windll.shcore.SetProcessDpiAwareness(1)
     sys.path.insert(0, str(ROOT))
     # Show the release version, not the development one, in this process only.
-    import image_swiper.version
-    image_swiper.version.__version__ = args.version.lstrip('v')
-    import image_swiper.app as app_module
-    from image_swiper import app_icon, paths, theme
+    import picpicker.version
+    picpicker.version.__version__ = args.version.lstrip('v')
+    import picpicker.app as app_module
+    from picpicker import app_icon, paths, theme, ui
+    # Undo exists only on Windows; hide it so the screenshots are true on every platform.
+    ui.CAN_RESTORE = False
 
-    work = Path(tempfile.mkdtemp(prefix='image-swiper-shots-'))
+    work = Path(tempfile.mkdtemp(prefix='picpicker-shots-'))
     samples = work / 'Holiday photos'
     samples.mkdir()
     make_samples(samples)
     app_module.runtime_paths = lambda: paths.runtime_paths(work / 'app')
     (work / 'app').mkdir()
 
+    root = tk.Tk()
+    # Captured pixels per window unit: 2 on a Retina Mac (Tk works in points), else 1.
+    try:
+        probe = ImageGrab.grab(bbox=(0, 0, 100, 100), all_screens=True)
+    except (OSError, subprocess.CalledProcessError):
+        sys.exit('Cannot capture the screen. On macOS, give the app running this script Screen '
+                 'Recording permission. On Linux, run it in an X11 session.')
+    ratio = probe.width / 100
+    layout_scale = SCALE / ratio
+
     original_init = theme.Theme.__init__
 
     def fixed_scale(self, root):
         original_init(self, root)
-        self.scale = SCALE
+        self.scale = layout_scale
     theme.Theme.__init__ = fixed_scale
 
-    root = tk.Tk()
     root._icons = [tk.PhotoImage(data=data) for data in app_icon.WINDOW]
     root.iconphoto(True, *root._icons)
     app = app_module.ImageOrganizer(root)
-    width, height = (round(v * SCALE) for v in WINDOW)
-    root.geometry(f'{width}x{height}+40+40')
+    width, height = (round(v * layout_scale) for v in WINDOW)
+    if width > root.winfo_screenwidth() or height > root.winfo_screenheight():
+        sys.exit(f'The {width} x {height} window does not fit on this screen. '
+                 'Use a larger or high-DPI display.')
+    root.geometry(f'{width}x{height}+40+60')
     root.attributes('-topmost', True)
     OUT.mkdir(parents=True, exist_ok=True)
+    expected = tuple(round(v * SCALE) for v in WINDOW)
 
     def capture(name):
         # The real temporary path would show your user name; show a neutral one instead.
-        app.path_label.config(text=' D:\\Pictures\\Holiday photos')
+        app.path_label.config(text=' Pictures/Holiday photos')
+        root.lift()
         root.update()
         x, y = root.winfo_rootx(), root.winfo_rooty()
         shot = ImageGrab.grab(bbox=(x, y, x + root.winfo_width(), y + root.winfo_height()),
-                              all_screens=True)
+                              all_screens=True).convert('RGB')
+        # Without screen-capture permission (macOS) the grab shows the desktop, not the app.
+        bar = Image.new('RGB', (1, 1), app.theme.bar).getpixel((0, 0))
+        corner = shot.getpixel((shot.width - 4, 4))
+        if max(abs(a - b) for a, b in zip(corner, bar)) > 12:
+            app.close()
+            sys.exit('The capture does not show the app. On macOS, give the app running this '
+                     'script Screen Recording permission, then run it again.')
+        if shot.size != expected:
+            shot = shot.resize(expected, Image.LANCZOS)
         shot.save(OUT / f'{name}.png', optimize=True)
         print(f'Wrote assets/screenshots/{name}.png ({shot.width} x {shot.height} px)')
 

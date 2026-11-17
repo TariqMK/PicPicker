@@ -9,7 +9,7 @@ from unittest.mock import Mock, patch
 
 from PIL import Image
 
-from image_swiper.media import MediaMixin, open_detached
+from picpicker.media import MediaMixin, open_detached
 
 
 class OpenDetachedTests(unittest.TestCase):
@@ -32,11 +32,11 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
-from image_swiper.media import MediaMixin
+from picpicker.media import MediaMixin
 folder = Path(sys.argv[1])
 window = SimpleNamespace(ffmpeg_available=True, thumbnails_dir=folder)
 window.video_thumbnail_path = lambda path: MediaMixin.video_thumbnail_path(window, path)
-with patch('image_swiper.media.run_background', side_effect=AssertionError('regenerated')):
+with patch('picpicker.media.run_background', side_effect=AssertionError('regenerated')):
     print(MediaMixin.generate_video_thumbnail(window, folder / 'clip.mp4'))
 '''
 
@@ -47,7 +47,7 @@ class VideoPreviewNameTests(unittest.TestCase):
             folder = Path(temporary)
             window = SimpleNamespace(ffmpeg_available=True, thumbnails_dir=folder)
             window.video_thumbnail_path = lambda path: MediaMixin.video_thumbnail_path(window, path)
-            with patch('image_swiper.media.run_background') as ffmpeg:
+            with patch('picpicker.media.run_background') as ffmpeg:
                 ffmpeg.side_effect = lambda command, **_: Image.new('RGB', (4, 4)).save(command[-1])
                 first = MediaMixin.generate_video_thumbnail(window, folder / 'clip.mp4')
 

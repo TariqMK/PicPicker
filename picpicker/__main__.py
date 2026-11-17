@@ -1,4 +1,4 @@
-"""Run with python -m image_swiper."""
+"""Run with python -m picpicker."""
 import tkinter as tk
 from . import app_icon
 from .app import ImageOrganizer

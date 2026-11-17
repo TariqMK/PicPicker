@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "image-swiper"
+name = "picpicker"
 version = "1.0.0"
 description = "Windows desktop photo and video review tool"
 requires-python = ">=3.10"
@@ -13,7 +13,7 @@ dependencies = ["Pillow", "piexif", "winshell; sys_platform == 'win32'", "pywin3
 formats = ["pillow-heif", "rawpy"]
 
 [project.scripts]
-image-swiper = "image_swiper.__main__:main"
+picpicker = "picpicker.__main__:main"
 
 [tool.setuptools.packages.find]
-include = ["image_swiper*"]
+include = ["picpicker*"]

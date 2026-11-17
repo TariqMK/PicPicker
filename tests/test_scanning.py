@@ -8,8 +8,8 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch
 
-from image_swiper.scanning import scan_library
-from image_swiper.library import LibraryMixin
+from picpicker.scanning import scan_library
+from picpicker.library import LibraryMixin
 
 
 class ScanningTests(unittest.TestCase):

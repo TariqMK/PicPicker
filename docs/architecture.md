@@ -1,6 +1,6 @@
 # Architecture
 
-Source code defines current behavior. Historical notes in private `Meta/Context.txt`
+Source code defines current behavior. Historical notes in private `Meta/context.txt`
 may describe features absent from the current application.
 
 `app.ImageOrganizer` owns review state and coordinates actions. Focused mixins
@@ -21,7 +21,7 @@ preserve shared state while separating the original class into modules:
 - `recycle_bin.py`: Windows delete/restore and native Trash support elsewhere.
 - `paths.py`: private runtime storage and legacy cache migration.
 
-Run `python -m image_swiper` or the original launcher. `scanning.py` traverses
+Run `python -m picpicker` or the original launcher. `scanning.py` traverses
 folders and extracts scan metadata in a daemon worker. `library.py` snapshots scan
 options and polls a result queue on the Tk thread. Cancellation events and scan
 generation IDs prevent obsolete results from updating the interface. Closing

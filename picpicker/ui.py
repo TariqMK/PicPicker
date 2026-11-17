@@ -77,7 +77,7 @@ class UiMixin:
             tk.Label(inner, image=mark, bg=t.bar).pack(side=tk.LEFT, padx=(0, t.px(10)))
         except OSError:
             pass
-        tk.Label(inner, text='Image Swiper', bg=t.bar, fg=t.text,
+        tk.Label(inner, text='PicPicker', bg=t.bar, fg=t.text,
                  font=t.font(14, semibold=True)).pack(side=tk.LEFT)
         self.version_btn = VersionButton(inner, t, 'v' + __version__.lstrip('v'), self.check_for_updates)
         self.version_btn.pack(side=tk.LEFT, padx=(t.px(2), 0), pady=(t.px(2), 0))

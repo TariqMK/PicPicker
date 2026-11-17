@@ -1,7 +1,7 @@
-// Image Swiper product page: live app previews drawn in SVG, and download links from the latest GitHub release.
+// PicPicker product page: live app previews drawn in SVG, and download links from the latest GitHub release.
 "use strict";
 
-const REPO = "TariqMK/Image-Swiper";
+const REPO = "TariqMK/PicPicker";
 const ASSET = { windows: /windows-x64\.zip$/i, macos: /macos-arm64\.zip$/i, linux: /linux-x64\.tar\.gz$/i };
 const OS_LABEL = { windows: "Download for Windows", macos: "Download for Mac", linux: "Download for Linux" };
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

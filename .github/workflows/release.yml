@@ -19,7 +19,7 @@ on:
 
 # Serialize version reservations and publication across manual runs.
 concurrency:
-  group: image-swiper-release
+  group: picpicker-release
   cancel-in-progress: false
 
 permissions:
@@ -57,11 +57,11 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add pyproject.toml image_swiper/version.py
+          git add pyproject.toml picpicker/version.py
           git commit -m "Release $TAG"
           git tag "$TAG"
           git push origin "refs/tags/$TAG"
-          gh release create "$TAG" --verify-tag --draft --prerelease=false --title "Image Swiper $TAG" --generate-notes
+          gh release create "$TAG" --verify-tag --draft --prerelease=false --title "PicPicker $TAG" --generate-notes
 
   build:
     needs: prepare

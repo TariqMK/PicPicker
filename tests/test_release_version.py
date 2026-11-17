@@ -39,7 +39,7 @@ class ReleaseVersionTests(unittest.TestCase):
 
     def test_prepare_stamps_both_versions_and_outputs(self):
         with tempfile.TemporaryDirectory() as temporary, chdir(temporary):
-            Path('image_swiper').mkdir()
+            Path('picpicker').mkdir()
             Path('pyproject.toml').write_text('[project]\nversion = "1.0.0"\n', encoding='utf-8')
             output = str(Path('output').resolve())
             with patch.dict(os.environ, {'GITHUB_OUTPUT': output}), patch('sys.argv', ['release_version.py', 'minor']), patch(
@@ -49,7 +49,7 @@ class ReleaseVersionTests(unittest.TestCase):
             ):
                 main()
             self.assertIn('version = "1.6.0"', Path('pyproject.toml').read_text())
-            self.assertIn('__version__ = "1.6.0"', Path('image_swiper/version.py').read_text())
+            self.assertIn('__version__ = "1.6.0"', Path('picpicker/version.py').read_text())
             self.assertEqual(Path(output).read_text(), 'version=1.6.0\ntag=v1.6.0\n')
 
     def test_invalid_bump_is_rejected(self):

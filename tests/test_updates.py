@@ -6,9 +6,9 @@ import unittest
 import urllib.error
 from unittest.mock import patch
 
-from image_swiper import updates
+from picpicker import updates
 
-URLOPEN = 'image_swiper.updates.urllib.request.urlopen'
+URLOPEN = 'picpicker.updates.urllib.request.urlopen'
 
 
 class FakeResponse(io.BytesIO):
@@ -48,10 +48,10 @@ class VersionTests(unittest.TestCase):
 
     def test_result_text(self):
         self.assertEqual(updates.result_text('newer', 'v2.5.0', '2.4.0'),
-                         ('Image Swiper v2.5.0 is available.',
+                         ('PicPicker v2.5.0 is available.',
                           'You have v2.4.0. Open the release page to download the new version.'))
         self.assertEqual(updates.result_text('current', 'v2.4.0', '2.4.0'),
-                         ('Image Swiper is up to date.', 'v2.4.0 is the latest release.'))
+                         ('PicPicker is up to date.', 'v2.4.0 is the latest release.'))
         self.assertEqual(updates.result_text('dev', 'v2.5.0', '0.0.0-dev'),
                          ('This is a development build.',
                           'You are running v0.0.0-dev. The latest release is v2.5.0.'))
@@ -66,7 +66,7 @@ class FetchTests(unittest.TestCase):
         request = urlopen.call_args.args[0]
         self.assertEqual(request.full_url, updates.LATEST_RELEASE_API)
         self.assertIsNone(request.data)
-        self.assertTrue(request.get_header('User-agent').startswith('Image-Swiper/'))
+        self.assertTrue(request.get_header('User-agent').startswith('PicPicker/'))
 
     def test_missing_foreign_or_http_release_url_falls_back_to_project_releases(self):
         for url in (None, 'https://example.com/x', f'http://github.com/{updates.REPOSITORY}/releases/tag/v1'):
@@ -80,7 +80,7 @@ class FetchTests(unittest.TestCase):
         self.assertEqual(str(caught.exception), message)
 
     def test_error_messages(self):
-        self.assertMessage(http_error(404), 'No Image Swiper releases are published yet.')
+        self.assertMessage(http_error(404), 'No PicPicker releases are published yet.')
         for code in (403, 429):
             self.assertMessage(http_error(code), 'GitHub limits how often it can be checked. Try again in an hour.')
         self.assertMessage(http_error(500), 'GitHub answered with error 500. Try again later.')
@@ -90,7 +90,7 @@ class FetchTests(unittest.TestCase):
                            "Can't reach GitHub: timed out. Check the internet connection.")
 
     def test_unreadable_answers(self):
-        unreadable = "GitHub sent an answer Image Swiper can't read. Try again later."
+        unreadable = "GitHub sent an answer PicPicker can't read. Try again later."
         with patch(URLOPEN, return_value=FakeResponse(b'not json')):
             with self.assertRaises(updates.UpdateError) as caught:
                 updates.fetch_latest_release()

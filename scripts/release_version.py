@@ -61,7 +61,7 @@ def main():
     if count != 1:
         raise RuntimeError('Expected exactly one project version')
     project.write_text(text, encoding='utf-8')
-    Path('image_swiper/version.py').write_text(
+    Path('picpicker/version.py').write_text(
         f'"""Application version, updated in each tagged release commit."""\n__version__ = "{version}"\n',
         encoding='utf-8',
     )

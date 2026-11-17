@@ -1,16 +1,16 @@
-"""Builds every Image Swiper brand image from the icon master SVGs.
+"""Builds every PicPicker brand image from the icon master SVGs.
 
 Writes:
-  assets/icon/image-swiper.png       1024 x 1024 px
-  assets/icon/image-swiper.ico       16-256 px, for the Windows exe
-  assets/icon/image-swiper.icns      16-1024 px with Retina sizes, for the macOS app
+  assets/icon/picpicker.png       1024 x 1024 px
+  assets/icon/picpicker.ico       16-256 px, for the Windows exe
+  assets/icon/picpicker.icns      16-1024 px with Retina sizes, for the macOS app
   assets/banner.png                  README banner, 1280 x 320 px drawn at 2x
   assets/social-card.png             GitHub social preview, 1280 x 640 px
-  image_swiper/app_icon.py           window and toolbar icons embedded as PNG data
+  picpicker/app_icon.py           window and toolbar icons embedded as PNG data
   docs/icon.svg, docs/apple-touch-icon.png, docs/social-card.png   copies for the website
 
-Reads assets/icon/image-swiper.svg (master) and assets/icon/image-swiper-small.svg (16-32 px).
-Colours come from image_swiper/theme.py, so the brand follows the app.
+Reads assets/icon/picpicker.svg (master) and assets/icon/picpicker-small.svg (16-32 px).
+Colours come from picpicker/theme.py, so the brand follows the app.
 
 Run from the repository root, in any Python 3.10+ environment:
   pip install PySide6-Essentials Pillow
@@ -32,17 +32,17 @@ from PySide6.QtSvg import QSvgRenderer
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-from image_swiper.theme import Theme  # noqa: E402  (colour tokens only; no window needed)
+from picpicker.theme import Theme  # noqa: E402  (colour tokens only; no window needed)
 
 # ---- Values to change -------------------------------------------------------------------
-NAME = 'Image Swiper'
+NAME = 'PicPicker'
 TAGLINE = 'Keep or delete. One at a time.'
 SUBLINE = 'Windows · macOS · Linux'
 # ------------------------------------------------------------------------------------------
 
 ASSETS = ROOT / 'assets'
-MASTER = ASSETS / 'icon' / 'image-swiper.svg'
-SMALL = ASSETS / 'icon' / 'image-swiper-small.svg'
+MASTER = ASSETS / 'icon' / 'picpicker.svg'
+SMALL = ASSETS / 'icon' / 'picpicker-small.svg'
 SMALL_MAX = 32  # Sizes up to this use the simplified SVG.
 
 SANS = ['Segoe UI Variable Display', 'Segoe UI', 'SF Pro Display', 'Helvetica Neue', 'Inter',
@@ -93,16 +93,16 @@ def png_bytes(image: Image.Image) -> bytes:
 def write_icons() -> Image.Image:
     folder = ASSETS / 'icon'
     master = icon(1024)
-    master.save(folder / 'image-swiper.png', optimize=True)
+    master.save(folder / 'picpicker.png', optimize=True)
 
     ico_sizes = [16, 20, 24, 32, 40, 48, 64, 128, 256]
     ico_images = [icon(s) for s in ico_sizes]
-    ico_images[-1].save(folder / 'image-swiper.ico', format='ICO',
+    ico_images[-1].save(folder / 'picpicker.ico', format='ICO',
                         sizes=[(s, s) for s in ico_sizes], append_images=ico_images[:-1])
 
     icns_sizes = [16, 32, 64, 128, 256, 512, 1024]
     icns_images = [mac_icon(s) for s in icns_sizes]
-    icns_images[-1].save(folder / 'image-swiper.icns', format='ICNS',
+    icns_images[-1].save(folder / 'picpicker.icns', format='ICNS',
                          append_images=icns_images[:-1])
 
     # Embedded in the package, so the app ships no loose icon file.
@@ -114,7 +114,7 @@ def write_icons() -> Image.Image:
     lines += [f"    '{window[s]}',  # {s} px" for s in (256, 48, 32, 16)]
     lines += [']', '', '# Toolbar mark, drawn from the simplified icon (64 px).',
               f"TOOLBAR = '{toolbar}'", '']
-    (ROOT / 'image_swiper' / 'app_icon.py').write_text('\n'.join(lines), encoding='utf-8')
+    (ROOT / 'picpicker' / 'app_icon.py').write_text('\n'.join(lines), encoding='utf-8')
     return master
 
 
@@ -264,7 +264,7 @@ def main() -> int:
     write_banner()
     ok = write_social_card(args.guides)
     write_site_copies()
-    print('Wrote icon files, image_swiper/app_icon.py, banner.png, social-card.png and docs/ copies')
+    print('Wrote icon files, picpicker/app_icon.py, banner.png, social-card.png and docs/ copies')
     return 0 if ok else 1
 
 

@@ -13,7 +13,7 @@ Windows:
 ```powershell
 python -m venv .venv
 .venv\Scripts\python.exe -m pip install -e ".[formats]"
-.venv\Scripts\python.exe -m image_swiper
+.venv\Scripts\python.exe -m picpicker
 ```
 
 macOS/Linux:
@@ -21,21 +21,21 @@ macOS/Linux:
 ```sh
 python3 -m venv .venv
 .venv/bin/python -m pip install -e '.[formats]'
-.venv/bin/python -m image_swiper
+.venv/bin/python -m picpicker
 ```
 
 Linux may require the distribution's Tkinter package. The existing Windows batch
 launcher uses `venv/`, while the examples above create `.venv/`.
-`python Image_Swiper.py` remains a compatibility entry point.
+`python PicPicker.py` remains a compatibility entry point.
 
 ## Brand images and screenshots
 
 Brand files live in `assets/`. Do not edit the generated files by hand.
 
-- `assets/icon/image-swiper.svg` is the icon master. `image-swiper-small.svg` is
+- `assets/icon/picpicker.svg` is the icon master. `picpicker-small.svg` is
   the simplified version for 16, 24 and 32 px. Keep the two in step.
 - `assets/make_assets.py` writes the `.png`, `.ico` and `.icns` icons, `banner.png`,
-  `social-card.png` and `image_swiper/app_icon.py` (the embedded window icon).
+  `social-card.png` and `picpicker/app_icon.py` (the embedded window icon).
   It also refreshes the website's copies in `docs/`: `icon.svg`,
   `apple-touch-icon.png` and `social-card.png`.
 - The website is `docs/index.html`, `style.css` and `app.js`, served by GitHub
@@ -56,18 +56,20 @@ Brand files live in `assets/`. Do not edit the generated files by hand.
 
 ### Update the screenshots
 
-**Note:** The script runs on Windows and shows the app window for a few seconds.
+**Note:** The script runs on Windows, macOS or Linux (X11). It shows the app window
+for a few seconds. On macOS, the app that runs the script needs **Screen Recording**
+permission: **System Settings** > **Privacy & Security** > **Screen Recording**.
 
 1. Install the app's dependencies (see [Run from source](#run-from-source)).
-2. Run `python assets/make_screenshots.py --version v3.0.2`, with the newest
-   release tag.
+2. Run `python assets/make_screenshots.py` from the repository root. The toolbar
+   shows the newest git tag. To show a different tag, add `--version v3.1.1`.
 
 ## Project structure
 
 ```text
-Image Swiper/
+PicPicker/
 |-- .github/workflows/release.yml # Manual release builds
-|-- image_swiper/
+|-- picpicker/
 |   |-- __main__.py       # Application entry point
 |   |-- app.py            # Review state and action coordination
 |   |-- ui.py             # Tkinter layout and bindings
@@ -86,8 +88,8 @@ Image Swiper/
 |   `-- architecture.md
 |-- tests/
 |-- scripts/              # Version allocation and packaging
-|-- Image_Swiper.py       # Compatibility launcher
-|-- Image_Swiper.bat      # Windows launcher using venv/
+|-- PicPicker.py       # Compatibility launcher
+|-- PicPicker.bat      # Windows launcher using venv/
 |-- pyproject.toml
 `-- README.md
 ```

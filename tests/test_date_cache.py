@@ -7,8 +7,8 @@ from threading import Event
 import unittest
 from unittest.mock import Mock
 
-from image_swiper.cache import CacheMixin
-from image_swiper.date_cache import DateCache
+from picpicker.cache import CacheMixin
+from picpicker.date_cache import DateCache
 
 
 class CacheHarness(CacheMixin):

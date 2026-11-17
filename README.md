@@ -1,22 +1,22 @@
-![Image Swiper. Keep or delete. One at a time.](assets/banner.png)
+![PicPicker. Keep or delete. One at a time.](assets/banner.png)
 
 Go through a folder of photos and videos one at a time, keep what you want and
 send the rest to the Recycle Bin. Turn on **On This Day** to see what you took on
 today's date in every past year. Works offline. No tracking.
 
-<img src="assets/screenshots/review.png" alt="Image Swiper part-way through a folder: a photo, the contact strip with one deleted frame, and the Undo, Delete and Keep buttons" width="840">
+<img src="assets/screenshots/review.png" alt="PicPicker part-way through a folder: a photo, the contact strip with one deleted frame, and the Delete and Keep buttons" width="840">
 
 ## Download
 
 Get the latest version from
-[Releases](https://github.com/TariqMK/Image-Swiper/releases). Under **Assets**,
+[Releases](https://github.com/TariqMK/PicPicker/releases). Under **Assets**,
 download the file for your computer:
 
 | Your computer | Download | Then open |
 | --- | --- | --- |
-| Windows (64-bit) | `windows-x64.zip` | `ImageSwiper/ImageSwiper.exe` |
-| Mac with Apple silicon (M1 or later) | `macos-arm64.zip` | `ImageSwiper.app` |
-| Linux (64-bit) | `linux-x64.tar.gz` | `ImageSwiper/ImageSwiper` |
+| Windows (64-bit) | `windows-x64.zip` | `PicPicker/PicPicker.exe` |
+| Mac with Apple silicon (M1 or later) | `macos-arm64.zip` | `PicPicker.app` |
+| Linux (64-bit) | `linux-x64.tar.gz` | `PicPicker/PicPicker` |
 
 Extract the download to a folder you can write to, such as Documents, and keep
 everything inside it together. You don't need to install Python or anything else
@@ -25,12 +25,12 @@ Ubuntu 22.04 or newer is supported.
 
 ### First launch
 
-Image Swiper isn't signed, so your computer may warn you the first time:
+PicPicker isn't signed, so your computer may warn you the first time:
 
 - **Windows:** if SmartScreen says it protected your PC, click **More info**, then
   **Run anyway**.
 - **macOS:** if the app won't open, go to **System Settings › Privacy & Security**,
-  scroll down and click **Open Anyway** next to Image Swiper.
+  scroll down and click **Open Anyway** next to PicPicker.
 
 ### Optional: video previews
 
@@ -64,7 +64,7 @@ sorts numbers naturally, so `IMG_9` comes before `IMG_10`.
 
 ### On This Day
 
-<img src="assets/screenshots/on-this-day.png" alt="Image Swiper with On This Day on: a photo taken on 7 November, 8 years ago, and the day arrows in the toolbar" width="840">
+<img src="assets/screenshots/on-this-day.png" alt="PicPicker with On This Day on: a photo taken on 7 November, 8 years ago, and the day arrows in the toolbar" width="840">
 
 Turn on **On This Day** to see only photos and videos taken on today's date, in
 any year, including this one. Use the arrows beside it to go back or forward a
@@ -98,7 +98,7 @@ your default player.
 
 ## Deleting safely
 
-Image Swiper only deletes a file when you press **Delete** or `Q`. Keeping,
+PicPicker only deletes a file when you press **Delete** or `Q`. Keeping,
 browsing, changing the order and On This Day never change your files, and kept
 files stay exactly where they are.
 
@@ -120,33 +120,37 @@ space back once you empty the Recycle Bin or Trash.
 - **Photos:** JPEG, PNG, GIF, BMP, WebP, TIFF, HEIC/HEIF and camera RAW files such
   as CR2, CR3, NEF, ARW, DNG and ORF. Large RAW files can take a moment to appear.
 - **Videos:** MP4, MOV, AVI, MKV, WMV, WebM, M4V, 3GP, MTS and more. Videos play
-  in your default player, not inside Image Swiper.
+  in your default player, not inside PicPicker.
 
 Dates come from the photo's or video's own capture information. If a file has
-none, Image Swiper uses the date the file was last modified, which can put it on
+none, PicPicker uses the date the file was last modified, which can put it on
 the wrong day in On This Day.
 
 ## Updating
 
 To check for a new version:
 
-1. Click the version number beside **Image Swiper** in the toolbar.
+1. Click the version number beside **PicPicker** in the toolbar.
 2. Read the result. If a new version is available, click **Open release page**.
 
 The version number turns teal when a new version is available. It stays teal until
 you close the app.
 
 Download the new version and extract it. On Windows, copy the `cache` folder from
-your old Image Swiper folder into the new one, beside `ImageSwiper.exe`. This keeps
-your saved dates, video previews and recent folders. On macOS and Linux, your saved
-data carries over automatically.
+your old app folder into the new one, beside `PicPicker.exe`. This keeps your saved
+dates, video previews and recent folders. On macOS and Linux, your saved data
+carries over automatically.
+
+**Note:** PicPicker was called Image Swiper up to version 3.1.1. On Windows, the old
+app folder is named `ImageSwiper`. On macOS and Linux, data saved by Image Swiper
+moves to PicPicker the first time you open it.
 
 <details>
 <summary>Upgrading on Windows from a version that stored data in AppData</summary>
 
-Close Image Swiper, press **Win + R**, and open
+Close PicPicker, press **Win + R**, and open
 `%LOCALAPPDATA%\ImageSwiper\data\`. Copy everything in it into the `cache` folder
-beside the new `ImageSwiper.exe`, then open the app. If `cache` already has files
+beside the new `PicPicker.exe`, then open the app. If `cache` already has files
 in it, back them up first. Nothing is moved automatically.
 
 </details>
@@ -164,7 +168,7 @@ in it, back them up first. Nothing is moved automatically.
   folders. It changes a file only when you delete it.
 - **Saved data stays on your computer.** To make repeat visits fast, the app saves
   file dates, video previews and your last three folders:
-  - **Windows:** in a `cache` folder beside `ImageSwiper.exe`
+  - **Windows:** in a `cache` folder beside `PicPicker.exe`
   - **macOS and Linux:** in your account's application data folder
 
 To remove previews of videos you have deleted, select **…** › **Clear Thumbnail
@@ -172,7 +176,7 @@ Cache…** in the toolbar.
 
 ## Troubleshooting
 
-- **The first scan is slow:** Image Swiper reads the date of every new file once.
+- **The first scan is slow:** PicPicker reads the date of every new file once.
   Next time the same folder opens much faster. You can close the app mid-scan.
 - **Videos show "Preview unavailable":** install FFmpeg (see above). You can still
   click to play them.
@@ -180,7 +184,7 @@ Cache…** in the toolbar.
   file date was used instead.
 - **Windows warns that the app is unsafe:** see [First launch](#first-launch).
 
-Image Swiper starts from the beginning of the folder each time; it doesn't remember
+PicPicker starts from the beginning of the folder each time; it doesn't remember
 where you stopped. Rotating photos, favourites and finding duplicates aren't
 available yet.
 

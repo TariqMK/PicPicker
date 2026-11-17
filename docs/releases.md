@@ -23,7 +23,7 @@ Examples: a highest version of `1.4.8` becomes `2.0.0`, `1.5.0` or `1.4.9`.
 A draft `v1.5.0` makes the next patch `v1.5.1`, even if the latest public release
 is still `v1.4.8`.
 
-The job commits the new `pyproject.toml` and `image_swiper/version.py` to a release
+The job commits the new `pyproject.toml` and `picpicker/version.py` to a release
 commit, pushes a `vMAJOR.MINOR.PATCH` tag pointing to it and reserves a draft
 release before starting the matrix. The source branch is not changed; the tagged
 source and packaged application contain the incremented version. Subsequent runs
@@ -41,9 +41,9 @@ PyInstaller packages the application and Python dependencies on each native runn
 
 | Target | Runner | Download |
 | --- | --- | --- |
-| Windows x64 | `windows-2022` | ZIP containing `ImageSwiper/ImageSwiper.exe` and dependencies |
-| macOS Apple Silicon | `macos-15`, ARM64 Python, explicit ARM64 assertion | ZIP containing `ImageSwiper.app` |
-| Linux x64 | `ubuntu-22.04` | tar.gz containing `ImageSwiper/ImageSwiper` and dependencies |
+| Windows x64 | `windows-2022` | ZIP containing `PicPicker/PicPicker.exe` and dependencies |
+| macOS Apple Silicon | `macos-15`, ARM64 Python, explicit ARM64 assertion | ZIP containing `PicPicker.app` |
+| Linux x64 | `ubuntu-22.04` | tar.gz containing `PicPicker/PicPicker` and dependencies |
 
 No Intel macOS or universal macOS build is produced. Extract the complete archive,
 keeping its dependencies beside the executable. The muted header label shows the
@@ -59,16 +59,19 @@ Windows retains Recycle Bin undo. macOS/Linux send files to native Trash and
 require restoring them through the system file manager; in-app undo is disabled.
 Frozen applications store private data in:
 
-- Windows: `cache/` beside `ImageSwiper.exe`. Extract the app to a writable folder.
-- macOS: `~/Library/Application Support/ImageSwiper/data/`.
-- Linux: `$XDG_DATA_HOME/image-swiper/data/`, defaulting to
-  `~/.local/share/image-swiper/data/`.
+- Windows: `cache/` beside `PicPicker.exe`. Extract the app to a writable folder.
+- macOS: `~/Library/Application Support/PicPicker/data/`.
+- Linux: `$XDG_DATA_HOME/picpicker/data/`, defaulting to
+  `~/.local/share/picpicker/data/`.
+
+The app was called Image Swiper before. On first launch, macOS and Linux builds
+move an existing `ImageSwiper` or `image-swiper` data folder to the new name.
 
 Source runs retain the project's ignored `data/` folder. Personal data is not
 included by the build script. Do not add private media as Python package resources.
 
 Older Windows builds used `%LOCALAPPDATA%/ImageSwiper/data/`. To reuse that cache,
-close Image Swiper and copy that folder's contents into `cache/` beside the new
+close PicPicker and copy that folder's contents into `cache/` beside the new
 executable before launching. The old files are left untouched. Keep `cache/` when
 updating the app to retain metadata, thumbnails and recent folders.
 

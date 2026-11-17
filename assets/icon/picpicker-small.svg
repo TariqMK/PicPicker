@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <!-- Image Swiper app icon, simplified for 16, 24 and 32 px: bigger shapes, no sun, a four-block strip.
-       Keep it in step with image-swiper.svg. -->
+  <!-- PicPicker app icon, simplified for 16, 24 and 32 px: bigger shapes, no sun, a four-block strip.
+       Keep it in step with picpicker.svg. -->
   <rect x="12" y="12" width="1000" height="1000" rx="228" fill="#1a1b1d" stroke="#2e3034" stroke-width="24"/>
   <g transform="translate(430 440) rotate(-7) scale(1.08)">
     <rect x="-170" y="-210" width="340" height="420" rx="34" fill="#45474d"/>
