@@ -3,6 +3,7 @@ import argparse
 import os
 import platform
 from pathlib import Path
+import plistlib
 import shutil
 import subprocess
 import sys
@@ -10,6 +11,21 @@ import sys
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from picpicker.version import __version__
+
+
+def stamp_bundle_version(app, version):
+    """Write the release version into the .app's Info.plist (PyInstaller leaves 0.0.0)."""
+    plist = Path(app) / 'Contents' / 'Info.plist'
+    info = plistlib.loads(plist.read_bytes())
+    info['CFBundleShortVersionString'] = version
+    info['CFBundleVersion'] = version
+    plist.write_bytes(plistlib.dumps(info))
+
+
+def resign_bundle(app):
+    """Changing Info.plist breaks the ad-hoc signature, so sign the bundle again and check it."""
+    subprocess.run(['codesign', '--force', '--sign', '-', str(app)], check=True)
+    subprocess.run(['codesign', '--verify', '--deep', '--strict', str(app)], check=True)
 
 
 def main():
@@ -36,6 +52,10 @@ def main():
     if sys.platform == 'darwin' and not list((ROOT / 'dist' / 'PicPicker.app' / 'Contents' /
                                               'Resources').glob('*.icns')):
         raise RuntimeError('The macOS app bundle has no icon (.icns)')
+    if sys.platform == 'darwin':
+        app = ROOT / 'dist' / 'PicPicker.app'
+        stamp_bundle_version(app, __version__)
+        resign_bundle(app)
     # A frozen smoke-test does not create a window or read/write personal data.
     executable = ROOT / 'dist' / 'PicPicker' / ('PicPicker.exe' if sys.platform == 'win32' else 'PicPicker')
     subprocess.run([str(executable), '--version'], check=True, timeout=60)
