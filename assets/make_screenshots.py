@@ -2,16 +2,21 @@
 
 Writes:
   assets/screenshots/review.png        A folder part-way through review, with one deletion
+  assets/screenshots/strip.png         The strip under the photo, with several deletions
+  assets/screenshots/undo.png          Just after a delete, with Undo available (Windows only)
+  assets/screenshots/order.png         The toolbar's order buttons, set to Date
+  assets/screenshots/review-complete.png  The end of a folder, with the session's totals
   assets/screenshots/on-this-day.png   On This Day, showing today's date in earlier years
 
 Sample photos are drawn by this script into a temporary folder; the app's cache and recent
 folders also go there, so your own files and settings are never read or changed. Nothing
 is deleted: the deleted frame on the contact strip is set directly. The window is drawn at
-2x (1120 x 720 px layout, saved as 2240 x 1440 px).
+2x (1120 x 720 px layout, saved as 2240 x 1440 px). On a screen too small for that, it
+falls back to 1x (1120 x 720 px) and says so.
 
 The screenshots look the same on every platform: only the app's content is captured (no
 title bar or window frame), the folder path is a neutral made-up one, and the Windows-only
-Undo button is hidden. Fonts are the platform's own (Segoe UI on Windows, SF Pro on macOS).
+Undo button is hidden except in undo.png. Fonts are the platform's own (Segoe UI on Windows, SF Pro on macOS).
 
 Run from the repository root on Windows, macOS or Linux (X11), with the app's dependencies
 installed and the window free to appear on screen for a few seconds:
@@ -187,7 +192,16 @@ def main() -> int:
         sys.exit('Cannot capture the screen. On macOS, give the app running this script Screen '
                  'Recording permission. On Linux, run it in an X11 session.')
     ratio = probe.width / 100
-    layout_scale = SCALE / ratio
+    # Draw at 2x. If the 2x window doesn't fit (a small 1x screen), fall back to 1x.
+    scale = SCALE
+    layout_scale = scale / ratio
+    margin = (40, 60)    # Room around the window: the menu bar and title bar take height.
+    if any(round(v * layout_scale) + m > limit
+           for v, m, limit in zip(WINDOW, margin, (root.winfo_screenwidth(), root.winfo_screenheight()))):
+        scale = 1.0
+        layout_scale = scale / ratio
+        print(f'Note: the {SCALE:g}x window does not fit on this screen; saving at 1x instead. '
+              'Retake on a high-DPI (Retina) display for sharper screenshots.')
 
     original_init = theme.Theme.__init__
 
@@ -199,20 +213,31 @@ def main() -> int:
     root._icons = [tk.PhotoImage(data=data) for data in app_icon.WINDOW]
     root.iconphoto(True, *root._icons)
     app = app_module.ImageOrganizer(root)
+    # The real temporary path would show your user name; always show a neutral one instead.
+    original_caption = app.update_caption
+
+    def neutral_caption(*args):
+        original_caption(*args)
+        app.path_label.config(text=' Pictures/Holiday photos')
+    app.update_caption = neutral_caption
     width, height = (round(v * layout_scale) for v in WINDOW)
-    if width > root.winfo_screenwidth() or height > root.winfo_screenheight():
+    if width + margin[0] > root.winfo_screenwidth() or height + margin[1] > root.winfo_screenheight():
         sys.exit(f'The {width} x {height} window does not fit on this screen. '
                  'Use a larger or high-DPI display.')
-    root.geometry(f'{width}x{height}+40+60')
+    root.geometry(f"{width}x{height}+20+0")
     root.attributes('-topmost', True)
     OUT.mkdir(parents=True, exist_ok=True)
-    expected = tuple(round(v * SCALE) for v in WINDOW)
+    expected = tuple(round(v * scale) for v in WINDOW)
 
-    def capture(name):
-        # The real temporary path would show your user name; show a neutral one instead.
-        app.path_label.config(text=' Pictures/Holiday photos')
+    def capture(name, crop=None):
+        """Save the window. crop=(widget, right, to_bottom) keeps only the band that widget sits in,
+        up to `right` layout px across (None for full width) and down to the window's bottom edge
+        when to_bottom is true."""
         root.lift()
         root.update()
+        if 'Holiday photos' not in app.path_label.cget('text') and app.path_label.cget('text'):
+            app.close()
+            sys.exit('The folder label shows a real path. Fix the caption override before publishing.')
         x, y = root.winfo_rootx(), root.winfo_rooty()
         shot = ImageGrab.grab(bbox=(x, y, x + root.winfo_width(), y + root.winfo_height()),
                               all_screens=True).convert('RGB')
@@ -225,6 +250,12 @@ def main() -> int:
                      'script Screen Recording permission, then run it again.')
         if shot.size != expected:
             shot = shot.resize(expected, Image.LANCZOS)
+        if crop:
+            widget, right, to_bottom = crop
+            k = scale / layout_scale    # Window units to screenshot pixels.
+            top = round((widget.winfo_rooty() - y) * k)
+            bottom = shot.height if to_bottom else round((widget.winfo_rooty() - y + widget.winfo_height()) * k)
+            shot = shot.crop((0, top, shot.width if right is None else round(right * scale), bottom))
         shot.save(OUT / f'{name}.png', optimize=True)
         print(f'Wrote assets/screenshots/{name}.png ({shot.width} x {shot.height} px)')
 
@@ -240,7 +271,47 @@ def main() -> int:
         app.deleted_indices = {3}
         app.processed_count, app.deleted_count, app.space_saved_mb = 6, 1, 2.4
         app.show_current_image()
-        root.after(1200, lambda: (capture('review'), on_this_day()))
+        root.after(1200, lambda: (capture('review'), strip()))
+
+    def strip():
+        # Further in, with a few more deletions: the strip and the bar under it.
+        app.current_index = 10
+        app.deleted_indices = {1, 3, 4, 8}
+        app.processed_count, app.deleted_count, app.space_saved_mb = 10, 4, 9.7
+        app.show_current_image()
+        root.after(1200, lambda: (capture('strip', crop=(app.strip.master, None, True)), undo()))
+
+    def undo():
+        # Undo is Windows-only; show it here as it looks on Windows, just after a delete.
+        undo_btn = ui.FlatButton(app.undo_btn.master, app.theme, 'Undo', None, variant='ghost',
+                                 icon='undo', key='Ctrl Z', height=40)
+        undo_btn.pack(side=tk.RIGHT, padx=(0, round(16 * layout_scale)))
+        app.current_index = 5
+        app.deleted_indices = {4}
+        app.processed_count, app.deleted_count, app.space_saved_mb = 5, 1, 2.1
+        app.show_current_image()
+        root.after(1200, lambda: (capture('undo'), undo_btn.destroy(), order()))
+
+    def order():
+        app.processed_count, app.deleted_count, app.space_saved_mb = 0, 0, 0
+        app.deleted_indices = set()
+        app.set_order('date')
+        def shot():
+            toolbar = app.order_control.master.master
+            right = (app.order_control.winfo_rootx() - root.winfo_rootx()
+                     + app.order_control.winfo_width()) / layout_scale + 12
+            capture('order', crop=(toolbar, right, False))
+            app.set_order('name')
+            when_scanned(complete)
+        when_scanned(shot)
+
+    def complete():
+        # The end of the folder, with the totals for the session.
+        app.processed_count, app.deleted_count, app.space_saved_mb = 14, 5, 18.6
+        app.deleted_indices = {1, 3, 4, 8, 12}
+        app.current_index = len(app.images)
+        app.show_current_image()
+        root.after(1200, lambda: (capture('review-complete'), on_this_day()))
 
     def on_this_day():
         app.processed_count, app.deleted_count, app.space_saved_mb = 0, 0, 0
