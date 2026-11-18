@@ -21,6 +21,19 @@ TRASH = 'Recycle Bin' if sys.platform == 'win32' else 'Trash'
 ORDERS = [('name', 'Name'), ('date', 'Date'), ('shuffle', 'Shuffle')]
 
 
+def compact_level(required, available, savings):
+    """How many compaction steps the toolbar needs to fit in `available` px (0 = none).
+
+    `required` is the toolbar's width with every label shown, and `savings` lists what each
+    step saves, in the order the steps are applied. If all steps aren't enough, it uses them all.
+    """
+    level = 0
+    while required > available and level < len(savings):
+        required -= savings[level]
+        level += 1
+    return level
+
+
 def shorten(text, limit):
     """Trim the middle of long paths and names so both ends stay readable."""
     if len(text) <= limit:
@@ -69,6 +82,8 @@ class UiMixin:
         bar.pack_propagate(False)
         inner = tk.Frame(bar, bg=t.bar)
         inner.pack(fill=tk.BOTH, expand=True, padx=t.px(16))
+        self.toolbar_inner = inner
+        inner.bind('<Configure>', lambda e: self.fit_toolbar())
 
         try:
             mark = self._image('mark', lambda: Image.open(
@@ -77,13 +92,15 @@ class UiMixin:
             tk.Label(inner, image=mark, bg=t.bar).pack(side=tk.LEFT, padx=(0, t.px(10)))
         except OSError:
             pass
-        tk.Label(inner, text='PicPicker', bg=t.bar, fg=t.text,
-                 font=t.font(14, semibold=True)).pack(side=tk.LEFT)
+        self.brand_label = tk.Label(inner, text='PicPicker', bg=t.bar, fg=t.text,
+                                    font=t.font(14, semibold=True))
+        self.brand_label.pack(side=tk.LEFT)
         self.version_btn = VersionButton(inner, t, 'v' + __version__.lstrip('v'), self.check_for_updates)
         self.version_btn.pack(side=tk.LEFT, padx=(t.px(2), 0), pady=(t.px(2), 0))
 
         self._separator(inner)
-        FlatButton(inner, t, 'Open Folder…', self.select_folder, icon='folder').pack(side=tk.LEFT)
+        self.open_folder_btn = FlatButton(inner, t, 'Open Folder…', self.select_folder, icon='folder')
+        self.open_folder_btn.pack(side=tk.LEFT)
         self.recent_btn = FlatButton(inner, t, command=self.show_recent_menu, icon='chevron-down')
         self.recent_btn.pack(side=tk.LEFT, padx=(t.px(4), 0))
 
@@ -118,6 +135,41 @@ class UiMixin:
 
         self.more_btn = FlatButton(inner, t, command=self.show_more_menu, variant='ghost', icon='more')
         self.more_btn.pack(side=tk.RIGHT)
+
+    @staticmethod
+    def _packed_width(widget):
+        """The width a packed widget takes, padding included, without waiting for Tk to lay out."""
+        if isinstance(widget, FlatButton):
+            width = widget.full_width
+        elif isinstance(widget, tk.Frame) and widget.pack_slaves():
+            width = sum(UiMixin._packed_width(child) for child in widget.pack_slaves())
+        else:
+            width = widget.winfo_reqwidth()
+        padx = widget.pack_info().get('padx', 0) if widget.winfo_manager() == 'pack' else 0
+        padx = padx if isinstance(padx, tuple) else (padx, padx)
+        return width + sum(int(p) for p in padx)
+
+    def fit_toolbar(self):
+        """Shorten the toolbar step by step when the window is too narrow for every label:
+        Random Day becomes an icon, then the app name hides, then Open Folder… becomes an icon."""
+        inner = getattr(self, 'toolbar_inner', None)
+        available = inner.winfo_width() if inner else 0
+        if available <= 1:
+            return
+        widgets = inner.pack_slaves()
+        brand_width = self.brand_label.winfo_reqwidth()
+        required = sum(self._packed_width(w) for w in widgets)
+        if self.brand_label not in widgets:
+            required += brand_width
+        savings = [self.random_day_btn.full_width - self.random_day_btn.h, brand_width,
+                   self.open_folder_btn.full_width - self.open_folder_btn.h]
+        level = compact_level(required, available, savings)
+        self.random_day_btn.set_compact(level >= 1)
+        if level >= 2:
+            self.brand_label.pack_forget()
+        elif self.brand_label not in widgets:
+            self.brand_label.pack(side=tk.LEFT, before=self.version_btn)
+        self.open_folder_btn.set_compact(level >= 3)
 
     def _menu(self):
         t = self.theme

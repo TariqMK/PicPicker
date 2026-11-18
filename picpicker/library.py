@@ -78,6 +78,7 @@ class LibraryMixin:
             self.update_viewing_date_label()
         else:
             self.date_nav_frame.pack_forget()
+        self.fit_toolbar()
         
         if hasattr(self, 'current_folder') and self.current_folder:
             self.load_images(self.current_folder)
@@ -109,6 +110,7 @@ class LibraryMixin:
             self.this_day_switch.redraw()
             self.date_nav_frame.pack(side=tk.LEFT, padx=(self.theme.px(8), 0), before=self.random_day_btn)
             self.update_viewing_date_label()
+            self.fit_toolbar()
         if getattr(self, 'current_folder', None):
             self.load_images(self.current_folder, random_day=True)
 

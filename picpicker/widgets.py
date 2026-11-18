@@ -47,6 +47,7 @@ class FlatButton(_CanvasControl):
             'ghost': (None, t.control, t.text_secondary, t.text),
         }
         self.text = text
+        self.full_text = text
         self.command = command
         self.variant = variant
         self.icon_name = icon
@@ -56,23 +57,48 @@ class FlatButton(_CanvasControl):
         self.key_font = t.font(11)
 
         self.h = t.px(height)
-        self.pad = t.px(14 if text else 0)
         self.icon_size = t.px(16)
         self.gap = t.px(8)
         self.key_h = t.px(20)
         self.key_w = max(self.key_h, self._measure(self.key_font, key) + t.px(12)) if key else 0
+        # Shown when the button is icon-only, so its name is still available.
+        self.tooltip = Tooltip(self, t, text) if text and icon else None
+        self.bind('<ButtonRelease-1>', self._release)
+        self.set_compact(False)
+
+    def set_compact(self, compact):
+        """Show only the icon (compact) or the icon and label. Only buttons with an icon can be compact."""
+        compact = compact and bool(self.icon_name)
+        text = '' if compact else self.full_text
+        if getattr(self, '_cache', None) is not None and text == self.text:
+            return
+        t = self.theme
+        self.text = text
+        self.pad = t.px(14 if text else 0)
         width = self.pad * 2 + self._measure(self.font, text)
-        if icon:
+        if self.icon_name:
             width += self.icon_size + (self.gap if text else 0)
-        if key:
+        if self.key:
             width += t.px(12) + self.key_w
         if not text:
             width = self.h
         self.configure(width=width, height=self.h)
         self.w = width
         self._cache = {}
-        self.bind('<ButtonRelease-1>', self._release)
+        if self.tooltip:
+            self.tooltip.active = compact
         self.redraw()
+
+    @property
+    def full_width(self):
+        """The width with the label shown, whether or not the button is compact now."""
+        if self.text or not self.full_text:
+            return self.w
+        t = self.theme
+        width = t.px(28) + self._measure(self.font, self.full_text) + self.icon_size + self.gap
+        if self.key:
+            width += t.px(12) + self.key_w
+        return width
 
     def set_enabled(self, enabled):
         self.enabled = enabled
@@ -189,6 +215,7 @@ class Tooltip:
 
     def __init__(self, widget, theme, text, delay=500):
         self.widget, self.theme, self.text, self.delay = widget, theme, text, delay
+        self.active = True
         self._after = None
         self._tip = None
         widget.bind('<Enter>', self._schedule, add='+')
@@ -197,6 +224,8 @@ class Tooltip:
 
     def _schedule(self, event=None):
         self._hide()
+        if not self.active:
+            return
         self._after = self.widget.after(self.delay, self._show)
 
     def _show(self):
