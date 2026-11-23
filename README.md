@@ -310,4 +310,4 @@ See [releases](docs/releases.md) for the full process.
 
 ## License
 
-Free to use and modify. No warranty provided.
+PicPicker is licensed under the [GNU General Public License v3.0](LICENSE). It comes with no warranty.
