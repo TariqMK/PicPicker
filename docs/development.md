@@ -87,7 +87,7 @@ PicPicker/
 |-- docs/
 |   `-- architecture.md
 |-- tests/
-|-- scripts/              # Version allocation and packaging
+|-- scripts/              # Packaging, version allocation, end-to-end check
 |-- PicPicker.py       # Compatibility launcher
 |-- PicPicker.bat      # Windows launcher using venv/
 |-- pyproject.toml
@@ -160,4 +160,16 @@ python -B -m unittest discover -s tests -v
 Storage tests use synthetic temporary files to check legacy migration,
 thumbnail-path updates, repeat runs, existing destinations and active-cache
 sidecars. They do not open personal media or exercise the GUI.
+
+The end-to-end check opens the real window from source and drives it on made-up
+sample photos in a new temporary folder. It checks scanning, name order,
+Subfolders, Keep, Delete, Undo (Windows), On This Day and date order, and reads
+the result on disk after each step. It uses its own temporary data folder.
+
+```powershell
+python scripts/check_e2e.py
+```
+
+On macOS and Linux it sends one 4 x 4 px sample photo to the Trash, because
+those systems have no Undo. Run it on each system before a release.
 

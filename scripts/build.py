@@ -28,25 +28,32 @@ def resign_bundle(app):
     subprocess.run(['codesign', '--verify', '--deep', '--strict', str(app)], check=True)
 
 
+def pyinstaller_command(system=sys.platform):
+    command = [sys.executable, '-m', 'PyInstaller', '--noconfirm', '--clean',
+               '--onedir', '--windowed', '--name', 'PicPicker',
+               '--collect-all', 'pillow_heif', '--collect-all', 'rawpy',
+               # On Linux, Pillow's compiled Tk bridge imports this from C, so PyInstaller can't
+               # see it. Without it the window fails to open: No module named 'PIL._tkinter_finder'.
+               '--hidden-import', 'PIL._tkinter_finder']
+    # File icons for the exe and the .app. Linux executables have none; the window icon is
+    # embedded in the package (picpicker/app_icon.py).
+    icons = ROOT / 'assets' / 'icon'
+    if system == 'win32':
+        command += ['--icon', str(icons / 'picpicker.ico')]
+    elif system == 'darwin':
+        command += ['--icon', str(icons / 'picpicker.icns')]
+    if system == 'darwin':
+        command += ['--target-architecture', 'arm64', '--osx-bundle-identifier', 'app.picpicker.desktop']
+    return command + [str(ROOT / 'PicPicker.py')]
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--platform', choices=['windows-x64', 'macos-arm64', 'linux-x64'], required=True)
     args = parser.parse_args()
     if args.platform == 'macos-arm64' and platform.machine().lower() != 'arm64':
         raise RuntimeError('macOS builds must run natively on Apple Silicon')
-    command = [sys.executable, '-m', 'PyInstaller', '--noconfirm', '--clean',
-               '--onedir', '--windowed', '--name', 'PicPicker',
-               '--collect-all', 'pillow_heif', '--collect-all', 'rawpy']
-    # File icons for the exe and the .app. Linux executables have none; the window icon is
-    # embedded in the package (picpicker/app_icon.py).
-    icons = ROOT / 'assets' / 'icon'
-    if sys.platform == 'win32':
-        command += ['--icon', str(icons / 'picpicker.ico')]
-    elif sys.platform == 'darwin':
-        command += ['--icon', str(icons / 'picpicker.icns')]
-    if sys.platform == 'darwin':
-        command += ['--target-architecture', 'arm64', '--osx-bundle-identifier', 'app.picpicker.desktop']
-    command += [str(ROOT / 'PicPicker.py')]
+    command = pyinstaller_command()
     environment = dict(os.environ, PYINSTALLER_CONFIG_DIR=str(ROOT / 'build' / 'pyinstaller-cache'))
     subprocess.run(command, cwd=ROOT, env=environment, check=True)
     if sys.platform == 'darwin' and not list((ROOT / 'dist' / 'PicPicker.app' / 'Contents' /

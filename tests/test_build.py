@@ -4,7 +4,17 @@ import plistlib
 import tempfile
 import unittest
 
-from scripts.build import stamp_bundle_version
+from scripts.build import pyinstaller_command, stamp_bundle_version
+
+
+class PyInstallerCommandTests(unittest.TestCase):
+    def test_every_build_bundles_pillows_tk_finder(self):
+        """Linux builds crashed at start-up without it (PIL imports it from C code)."""
+        for system in ('win32', 'darwin', 'linux'):
+            with self.subTest(system=system):
+                command = pyinstaller_command(system)
+                index = command.index('--hidden-import')
+                self.assertEqual(command[index + 1], 'PIL._tkinter_finder')
 
 
 class BundleVersionTests(unittest.TestCase):

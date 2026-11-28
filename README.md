@@ -179,7 +179,8 @@ PicPicker only deletes a file when you press **Delete** or `Q`. Keeping,
 browsing, changing the order and On This Day never change your files.
 
 - **Windows:** deleted files go to the Recycle Bin. Undo restores the most recent
-  one. Restore older ones from the Recycle Bin.
+  one. Restore older ones from the Recycle Bin. Undo doesn't replace a file that
+  now has the same name.
 - **macOS and Linux:** deleted files go to the Trash. Restore them from the Trash.
   Undo isn't available on these systems.
 
@@ -279,6 +280,15 @@ See [development](docs/development.md) for more detail.
 ```sh
 python -B -m unittest discover -s tests -v
 ```
+
+To check the main features in the real window, run the end-to-end check. It
+makes its own sample photos in a temporary folder and never touches your files.
+
+```sh
+python scripts/check_e2e.py
+```
+
+On macOS and Linux it sends one sample photo to the Trash.
 
 </details>
 
